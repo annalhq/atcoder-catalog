@@ -9,8 +9,6 @@ export type CountedNode = {
   slug: string;
   title: string;
   count: number;
-  /** Problems per AtCoder colour band. */
-  bands: number[];
   children: CountedNode[];
 };
 

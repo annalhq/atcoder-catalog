@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, m, useReducedMotion, type Variants } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
+import { useEffect, useState } from "react";
 import { bandColor, difficultyBand } from "@/lib/difficulty";
 import { CategoryLink } from "./category-link";
-import { ease } from "./motion-provider";
+import { EASE } from "./motion-provider";
+import { Rise } from "./rise";
 
 export type HeroTopic = { slug: string; label: string; count: number; median: number };
 
@@ -17,14 +18,11 @@ const word: Variants = {
 
 const letter: Variants = {
   hidden: { opacity: 0, y: "0.5em", filter: "blur(12px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.55, ease } },
-  exit: { opacity: 0, y: "-0.35em", filter: "blur(8px)", transition: { duration: 0.22, ease } },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.55, ease: EASE } },
+  exit: { opacity: 0, y: "-0.35em", filter: "blur(8px)", transition: { duration: 0.22, ease: EASE } },
 };
 
-/**
- * The headline's middle line cycles through real topics, letter by letter,
- * each tinted with the AtCoder colour of that topic's median difficulty.
- */
+/** the middle line cycles through real topics letter by letter, in the accent orange */
 export function HeroTitle({ topics }: { topics: HeroTopic[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -41,81 +39,62 @@ export function HeroTitle({ topics }: { topics: HeroTopic[] }) {
   const color = bandColor(band);
 
   return (
-    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      <h1
-        aria-label="Get good at competitive programming, one topic at a time."
-        className="font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-ink sm:text-[64px] lg:text-[80px]"
-      >
-        <Line delay={0}>Get good at</Line>
-        <span
-          aria-hidden
-          className="relative block h-[1.2em] overflow-hidden transition-colors duration-700"
-          style={{ color }}
+    <div
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      className="flex flex-col items-center gap-3 sm:gap-4"
+    >
+      <Rise index={0}>
+        <h1
+          aria-label="Get good at competitive programming, one topic at a time."
+          className="max-w-4xl text-balance font-runde text-[2rem] leading-[1.05] min-[400px]:text-4xl font-bold tracking-tight text-black sm:text-5xl md:text-6xl lg:text-7xl dark:text-white"
         >
-          <AnimatePresence mode="wait" initial={false}>
-            <m.span
-              key={topic.slug}
-              variants={word}
-              initial="hidden"
-              animate="show"
-              exit="exit"
-              className="absolute inset-x-0 top-0 whitespace-nowrap"
-            >
-              {Array.from(topic.label, (char, i) => (
-                <m.span key={i} variants={letter} className="inline-block whitespace-pre">
-                  {char}
-                </m.span>
-              ))}
-            </m.span>
-          </AnimatePresence>
-        </span>
-        <Line delay={0.15} className="text-ash">
-          one topic at a time.
-        </Line>
-      </h1>
+          <span aria-hidden className="block">
+            Get good at
+          </span>
+          <span aria-hidden className="relative block h-[1.15em] overflow-hidden text-accent">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={topic.slug}
+                variants={word}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="absolute inset-x-0 top-0 whitespace-nowrap"
+              >
+                {Array.from(topic.label, (char, i) => (
+                  <motion.span key={i} variants={letter} className="inline-block whitespace-pre">
+                    {char}
+                  </motion.span>
+                ))}
+              </motion.span>
+            </AnimatePresence>
+          </span>
+          <span aria-hidden className="block">
+            one topic at a time.
+          </span>
+        </h1>
+      </Rise>
 
-      <m.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.4, ease }}
-        className="mt-6"
-      >
+      <Rise index={1}>
         <CategoryLink
           href={`/${topic.slug}`}
-          className="inline-flex items-center gap-2.5 rounded-full bg-surface px-3 py-1 text-[13px] tracking-[0.1px] text-mute ring-1 ring-hairline hover:text-ink"
+          className="inline-flex items-center gap-2 rounded-full bg-black/[0.05] px-3 py-1.5 text-xs font-medium sm:gap-2.5 sm:px-3.5 sm:text-sm text-black/60 transition-colors duration-150 ease-out hover:text-black dark:bg-white/[0.07] dark:text-white/60 dark:hover:text-white"
         >
           <span
             className="size-2.5 rounded-full border transition-colors duration-700"
-            style={{
-              borderColor: color,
-              background: `linear-gradient(to top, ${color} ${fill}%, transparent ${fill}%)`,
-            }}
+            style={{ borderColor: color, background: `linear-gradient(to top, ${color} ${fill}%, transparent ${fill}%)` }}
           />
           <span className="tabular-nums">{topic.count} problems</span>
-          <span className="text-stone">·</span>
+          <span className="opacity-40">·</span>
           <span>
-            median difficulty{" "}
+            median{" "}
             <span className="tabular-nums transition-colors duration-700" style={{ color }}>
               {topic.median}
             </span>
           </span>
-          <span aria-hidden>→</span>
         </CategoryLink>
-      </m.div>
+      </Rise>
     </div>
-  );
-}
-
-function Line({ children, delay, className = "" }: { children: ReactNode; delay: number; className?: string }) {
-  return (
-    <m.span
-      aria-hidden
-      className={`block ${className}`}
-      initial={{ opacity: 0, y: "0.3em", filter: "blur(14px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.9, delay, ease }}
-    >
-      {children}
-    </m.span>
   );
 }

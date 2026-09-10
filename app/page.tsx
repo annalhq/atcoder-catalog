@@ -1,16 +1,12 @@
-import { CategoryLink } from "@/components/category-link";
+import { BracketCount } from "@/components/bracket-count";
 import { HeroTitle, type HeroTopic } from "@/components/hero-title";
-import { Reveal } from "@/components/reveal";
+import { Rise } from "@/components/rise";
+import { SquircleCtaPair } from "@/components/squircle-cta";
 import { TopicAccordion } from "@/components/topic-accordion";
-import {
-  getCount,
-  getCountedTree,
-  getMedianDifficulty,
-  getUniqueProblemCount,
-} from "@/lib/catalog";
+import { getCount, getCountedTree, getMedianDifficulty, getUniqueProblemCount } from "@/lib/catalog";
 import { PRACTICE, type CountedNode } from "@/lib/categories";
 
-// Short labels so the rotating headline word fits on one line on phones.
+// short labels so the rotating headline word fits on one line on phones
 const HERO_TOPICS: [slug: string, label: string][] = [
   ["greedy", "Greedy"],
   ["segment_tree", "Segment Trees"],
@@ -28,44 +24,76 @@ const HERO_TOPICS: [slug: string, label: string][] = [
 
 export default function Home() {
   const tree = getCountedTree();
-  const ladderSize = getCount(PRACTICE.slug);
-  const heroTopics: HeroTopic[] = HERO_TOPICS.filter(([slug]) => getCount(slug) > 0).map(
-    ([slug, label]) => ({ slug, label, count: getCount(slug), median: getMedianDifficulty(slug) }),
-  );
+  const topics = countNodes(tree);
+  const problems = getUniqueProblemCount();
+  const heroTopics: HeroTopic[] = HERO_TOPICS.filter(([slug]) => getCount(slug) > 0).map(([slug, label]) => ({
+    slug,
+    label,
+    count: getCount(slug),
+    median: getMedianDifficulty(slug),
+  }));
 
   return (
-    <main>
-      <section className="relative overflow-hidden">
-        <div aria-hidden className="hero-stripes" />
-        <div className="shell relative pt-20 pb-14 sm:pt-28">
-          <HeroTitle topics={heroTopics} />
-          <Reveal delay={0.3}>
-            <p className="mt-8 max-w-xl text-lg leading-[1.6] text-mute">
-              Strengthen a weak area with curated AtCoder problems, without seeing every tag a problem carries.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-              {ladderSize > 0 && (
-                <CategoryLink
-                  href={`/${PRACTICE.slug}`}
-                  className="inline-flex h-9 items-center rounded-md bg-white px-4 text-sm font-medium tracking-[0.2px] text-black active:bg-primary-pressed"
-                >
-                  Start the practice ladder
-                </CategoryLink>
-              )}
-              <p className="text-sm text-mute">
-                <span className="text-ink">{getUniqueProblemCount().toLocaleString("en-US")}</span> problems
-                <span className="px-2 text-stone">·</span>
-                <span className="text-ink">{countNodes(tree)}</span> topics
+    <>
+      <section className="relative w-full p-1.5 md:p-2.5">
+        <div className="surface-card relative flex min-h-[min(100svh_-_0.75rem,60rem)] w-full items-center justify-center overflow-hidden rounded-[45px] md:min-h-[min(100svh_-_1.25rem,60rem)]">
+          <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(120%_75%_at_50%_-5%,rgba(255,255,255,0.07),transparent_60%)] dark:block" />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-[68%] -translate-x-1/2 -translate-y-1/2 select-none font-runde text-[28rem] leading-none font-bold text-black opacity-[0.04] dark:text-white dark:opacity-[0.05]"
+          >
+            A
+          </span>
+
+          <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center justify-center gap-3 px-4 pt-28 pb-20 text-center sm:gap-4 sm:px-6">
+            <HeroTitle topics={heroTopics} />
+            <Rise index={2}>
+              <p className="max-w-xl font-medium text-black/60 sm:text-lg dark:text-white/60">
+                Curated AtCoder problems sorted by technique, with your solved and attempted status pulled straight
+                from AtCoder Problems. Pick a topic and start practicing.
               </p>
-            </div>
-          </Reveal>
+            </Rise>
+            <Rise index={3}>
+              <SquircleCtaPair
+                primary={{ href: `/${PRACTICE.slug}`, label: "Start the practice ladder", primary: true }}
+                secondary={{
+                  href: "/#topics",
+                  label: (
+                    <>
+                      Browse {topics} topics
+                      <span className="hidden text-white/50 sm:inline">·</span>
+                      <span className="hidden text-white/50 tabular-nums sm:inline">
+                        {problems.toLocaleString("en-US")} problems
+                      </span>
+                    </>
+                  ),
+                }}
+              />
+            </Rise>
+          </div>
         </div>
       </section>
 
-      <Reveal delay={0.4} className="shell pb-24">
-        <TopicAccordion tree={tree} />
-      </Reveal>
-    </main>
+      <section id="topics" className="mx-auto w-full max-w-6xl scroll-mt-24 px-3 py-20 sm:px-6 sm:py-24 md:py-32">
+        <header className="flex flex-col items-center gap-3 px-2 text-center sm:px-0">
+          <h2 className="max-w-2xl text-balance font-runde text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+            {topics} topics, sorted by technique
+          </h2>
+          <p className="max-w-lg text-balance text-sm font-medium text-muted-foreground sm:text-base">
+            Every topic lists its problems newest first, coloured by AtCoder difficulty. Expand a topic to see its
+            subtopics
+            <span className="hidden [@media(hover:hover)]:inline">
+              , or press <BracketCount value="/" /> to search
+            </span>
+            .
+          </p>
+        </header>
+
+        <div className="mt-12">
+          <TopicAccordion tree={tree} />
+        </div>
+      </section>
+    </>
   );
 }
 

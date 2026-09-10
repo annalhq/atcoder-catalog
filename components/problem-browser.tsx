@@ -10,11 +10,12 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { m } from "motion/react";
+import { motion } from "motion/react";
 import { difficultyBand } from "@/lib/difficulty";
 import { contestFamily, problemUrl, type ContestFamily, type ProblemRow } from "@/lib/problem";
 import { clearUser, selectUser, useSubmissions } from "@/lib/submissions";
-import { ease } from "./motion-provider";
+import { cn } from "@/lib/utils";
+import { EASE } from "./motion-provider";
 
 type Sort = "ladder" | "newest" | "oldest" | "easiest" | "hardest" | "random";
 type Status = "all" | "unsolved" | "solved" | "attempted" | "untried";
@@ -36,14 +37,14 @@ const STATUSES: [Status, string][] = [
   ["untried", "Not attempted"],
 ];
 
-// Rows are rendered in batches as the list scrolls into view, so large
-// categories (the ladder has ~3,500) stay light in HTML and in the DOM.
+// rows render in batches as the list scrolls so the ladder's ~3,500 stay light
 const RENDER_STEP = 200;
 
-const pillClass = (active: boolean) =>
-  `h-7 rounded-full px-2.5 text-sm transition-colors ${
-    active ? "bg-elevated text-white ring-1 ring-hairline" : "text-body hover:text-ink"
-  }`;
+const CONTROL =
+  "flex h-9 shrink-0 items-center rounded-[12px] squircle bg-popover px-3 text-xs font-medium text-foreground shadow-sm";
+
+// ios zooms into form fields under 16px, so they only shrink from sm up
+const FIELD_TEXT = "text-base sm:text-xs";
 
 export function ProblemBrowser({ rows, ladder }: { rows: ProblemRow[]; ladder: boolean }) {
   const { user, verdicts, loading, error } = useSubmissions();
@@ -64,7 +65,7 @@ export function ProblemBrowser({ rows, ladder }: { rows: ProblemRow[]; ladder: b
 
   const sorted = useMemo(() => sortRows(rows, sort, seed), [rows, sort, seed]);
 
-  // Contest + difficulty filters; progress is measured against this set.
+  // contest + difficulty filters; progress is measured against this set
   const scoped = useMemo(() => {
     const lo = parseBound(min, 0);
     const hi = parseBound(max, Infinity);
@@ -113,118 +114,110 @@ export function ProblemBrowser({ rows, ladder }: { rows: ProblemRow[]; ladder: b
   };
 
   return (
-    <section className="mt-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <UserForm user={user} loading={loading} />
-        <div className="flex items-center gap-3 text-[13px] tracking-[0.1px] text-mute">
-          {progress && progress.total > 0 && (
-            <span className="hidden h-1 w-24 overflow-hidden rounded-full bg-elevated sm:block">
-              <m.span
-                className="block h-full rounded-full bg-accent-green"
-                initial={false}
-                animate={{ width: `${(progress.solved / progress.total) * 100}%` }}
-                transition={{ duration: 0.6, ease }}
-              />
-            </span>
-          )}
-          <p>
-          {error ? (
-            <span className="text-accent-red">{error}</span>
-          ) : !user ? (
-            "Add your AtCoder username to track progress."
-          ) : progress ? (
-            <>
-              Solved <span className="text-ink">{progress.solved}</span> / {progress.total}
-              <span className="px-2 text-stone">·</span>
-              Attempted <span className="text-ink">{progress.attempted}</span>
-              {loading && <span className="text-ash"> · syncing…</span>}
-            </>
-          ) : (
-            loading && "Loading submissions…"
-          )}
-          </p>
+    <section className="surface-card rounded-[28px] p-1.5 sm:rounded-[32px] sm:p-2">
+      <div className="flex flex-col gap-3 px-2 pt-2 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <UserForm user={user} loading={loading} />
+          <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
+            {progress && progress.total > 0 && (
+              <span className="hidden h-1.5 w-28 overflow-hidden rounded-full bg-black/[0.06] sm:block dark:bg-white/[0.08]">
+                <motion.span
+                  className="block h-full rounded-full bg-accent"
+                  initial={false}
+                  animate={{ width: `${(progress.solved / progress.total) * 100}%` }}
+                  transition={{ duration: 0.6, ease: EASE }}
+                />
+              </span>
+            )}
+            <p>
+              {error ? (
+                <span className="text-accent">{error}</span>
+              ) : !user ? (
+                "Add your AtCoder username to track progress."
+              ) : progress ? (
+                <>
+                  Solved <span className="text-foreground">{progress.solved}</span> / {progress.total}
+                  <span className="px-1.5 text-accent">·</span>
+                  Attempted <span className="text-foreground">{progress.attempted}</span>
+                  {loading && <span className="opacity-60"> · syncing…</span>}
+                </>
+              ) : (
+                loading && "Loading submissions…"
+              )}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-hairline pt-4">
-        <div className="flex items-center gap-1" role="group" aria-label="Contest">
-          {contests.map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={contest === value}
-              onClick={() => setContest(value)}
-              className={pillClass(contest === value)}
-            >
-              {label}
+        {/* one swipeable strip on phones, wrapping rows from sm up */}
+        <div className="no-scrollbar -mx-2 -my-1 flex items-center gap-2 overflow-x-auto px-2 py-1 sm:mx-0 sm:my-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:py-0">
+          <Segmented value={contest} onChange={setContest} options={contests} label="Contest" />
+          <Select label="Sort" value={sort} onChange={(v) => (v === "random" ? shuffle() : setSort(v))}>
+            {ladder && <option value="ladder">Ladder order</option>}
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="easiest">Easiest first</option>
+            <option value="hardest">Hardest first</option>
+            <option value="random">Random</option>
+          </Select>
+          {sort === "random" && (
+            <button type="button" onClick={shuffle} className={cn(CONTROL, "cursor-pointer hover:text-accent")}>
+              Reshuffle
             </button>
-          ))}
-        </div>
-        <span className="mx-1 hidden h-5 w-px bg-hairline sm:block" />
-        <Select label="Sort" value={sort} onChange={(v) => (v === "random" ? shuffle() : setSort(v))}>
-          {ladder && <option value="ladder">Ladder order</option>}
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="easiest">Easiest first</option>
-          <option value="hardest">Hardest first</option>
-          <option value="random">Random</option>
-        </Select>
-        {sort === "random" && (
+          )}
+          <Select label="Status" value={status} onChange={setStatus} disabled={!verdicts}>
+            {STATUSES.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </Select>
+          <div className={cn(CONTROL, "gap-1.5 px-2")}>
+            <DifficultyInput label="Minimum difficulty" placeholder="Min" value={minInput} onChange={setMinInput} />
+            <span className="text-foreground/30">–</span>
+            <DifficultyInput label="Maximum difficulty" placeholder="Max" value={maxInput} onChange={setMaxInput} />
+          </div>
           <button
             type="button"
-            onClick={shuffle}
-            className="h-9 rounded-md bg-elevated px-3 text-sm font-medium tracking-[0.2px] text-ink hover:bg-card"
+            aria-pressed={!showDifficulty}
+            onClick={() => setShowDifficulty((shown) => !shown)}
+            className={cn(
+              CONTROL,
+              "cursor-pointer transition-colors",
+              showDifficulty ? "text-foreground/60 hover:text-foreground" : "bg-accent text-white",
+            )}
           >
-            Reshuffle
+            {showDifficulty ? "Hide difficulty" : "Show difficulty"}
           </button>
-        )}
-        <Select label="Status" value={status} onChange={setStatus} disabled={!verdicts}>
-          {STATUSES.map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </Select>
-        <div className="flex items-center gap-1.5">
-          <DifficultyInput label="Minimum difficulty" placeholder="Min" value={minInput} onChange={setMinInput} />
-          <span className="text-ash">–</span>
-          <DifficultyInput label="Maximum difficulty" placeholder="Max" value={maxInput} onChange={setMaxInput} />
         </div>
-        <button
-          type="button"
-          aria-pressed={!showDifficulty}
-          onClick={() => setShowDifficulty((shown) => !shown)}
-          className={pillClass(!showDifficulty)}
-        >
-          Hide difficulty
-        </button>
       </div>
 
       <div
-        className="mt-4 rounded-lg border border-hairline bg-surface p-1.5"
+        className="squircle rounded-3xl border border-black/[0.06] bg-white p-1.5 dark:border-neutral-500/15 dark:bg-neutral-950"
         data-hide-difficulty={showDifficulty ? undefined : ""}
       >
-        <div className="problem-row text-xs tracking-[0.4px] text-ash" aria-hidden>
+        <div className="problem-row text-[10px] font-medium tracking-wider text-foreground/45 uppercase" aria-hidden>
           <span>#</span>
           <span>Task</span>
           <span>Title</span>
-          <span className="diff-value">Difficulty</span>
+          <span className="diff-value">Diff</span>
           <span />
         </div>
-        {/* Keyed by the filters so each new result set fades in. */}
-        <m.div
+        {/* keyed by the filters so each new result set fades in */}
+        <motion.div
           key={`${contest}|${sort}|${seed}|${status}|${min}|${max}`}
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease }}
+          transition={{ duration: 0.3, ease: EASE }}
         >
           {visible.slice(0, limit).map((row, i) => (
             <Row key={row[0]} row={row} n={i + 1} verdict={verdicts?.[row[0]]} />
           ))}
           {hasMore && <div ref={sentinelRef} className="h-px" aria-hidden />}
-        </m.div>
+        </motion.div>
         {visible.length === 0 && (
-          <p className="px-3 py-12 text-center text-sm text-mute">No problems match these filters.</p>
+          <p className="px-3 py-12 text-center text-sm font-medium text-muted-foreground">
+            No problems match these filters.
+          </p>
         )}
       </div>
     </section>
@@ -234,6 +227,7 @@ export function ProblemBrowser({ rows, ladder }: { rows: ProblemRow[]; ladder: b
 const Row = memo(function Row({ row, n, verdict }: { row: ProblemRow; n: number; verdict?: string }) {
   const [id, , , title, difficulty] = row;
   const { band, fill } = difficultyBand(difficulty);
+  const solved = verdict === "AC";
   return (
     <a
       href={problemUrl(row)}
@@ -241,36 +235,51 @@ const Row = memo(function Row({ row, n, verdict }: { row: ProblemRow; n: number;
       rel="noreferrer"
       className="problem-row"
       data-band={band}
-      data-verdict={verdict === "AC" ? "ac" : undefined}
+      data-verdict={solved ? "ac" : undefined}
     >
-      <span className="text-ash">{n}</span>
-      <span className="truncate font-mono text-[13px] uppercase text-mute">{id}</span>
+      <span className="text-foreground/40">{n}</span>
+      <span className="truncate font-mono text-xs text-foreground/55 uppercase">{id}</span>
       <span className="flex min-w-0 items-center gap-2.5">
         <span className="diff-dot" style={{ "--fill": `${fill}%` } as CSSProperties} />
-        <span className="problem-title truncate">
-          <Title text={title} />
+        <span className="flex min-w-0 flex-col">
+          <span className="problem-title truncate font-medium">
+            <Title text={title} />
+          </span>
+          {/* the task column is hidden on phones, so the id moves under the title */}
+          <span className="truncate font-mono text-[11px] text-foreground/45 uppercase sm:hidden">{id}</span>
         </span>
       </span>
       <span className="diff-value">{difficulty}</span>
-      <span className="text-right">{verdict && <span className="verdict">{verdict}</span>}</span>
+      <span className="text-right">
+        {verdict && (
+          <span
+            className={cn(
+              "inline-block min-w-9 rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold",
+              solved ? "bg-accent/10 text-accent" : "bg-muted text-foreground/60",
+            )}
+          >
+            {verdict}
+          </span>
+        )}
+      </span>
     </a>
   );
 });
 
-/** A few AtCoder titles use <s> for strikethrough; everything else is plain text. */
+/** a few atcoder titles use <s> for strikethrough; everything else is plain text */
 function Title({ text }: { text: string }) {
   if (!text.includes("<s>")) return text;
   return text.split(/<s>(.*?)<\/s>/).map((part, i) => (i % 2 ? <s key={i}>{part}</s> : part));
 }
 
 function UserForm({ user, loading }: { user: string | null; loading: boolean }) {
-  // null mirrors the stored user, so a username restored after hydration shows up.
+  // null mirrors the stored user, so a username restored after hydration shows up
   const [draft, setDraft] = useState<string | null>(null);
   const value = draft ?? user ?? "";
 
   return (
     <form
-      className="flex items-center gap-2"
+      className={cn(CONTROL, "h-10 w-full gap-2 pr-1 pl-3 sm:w-auto")}
       onSubmit={(e) => {
         e.preventDefault();
         const name = value.trim();
@@ -289,16 +298,54 @@ function UserForm({ user, loading }: { user: string | null; loading: boolean }) 
         aria-label="AtCoder username"
         autoComplete="off"
         spellCheck={false}
-        className="h-9 w-48 rounded-md border border-hairline bg-elevated px-3 text-sm text-white outline-none placeholder:text-ash focus:border-hairline-strong"
+        className="min-w-0 flex-1 bg-transparent text-base font-medium outline-none placeholder:text-foreground/40 sm:w-40 sm:flex-none sm:text-sm"
       />
       <button
         type="submit"
         disabled={loading}
-        className="h-9 rounded-md bg-white px-4 text-sm font-medium tracking-[0.2px] text-black active:bg-primary-pressed disabled:bg-elevated disabled:text-ash"
+        className="squircle h-8 cursor-pointer rounded-[10px] bg-accent px-3.5 font-runde text-xs font-semibold text-white transition-colors duration-150 ease-out hover:bg-accent-hover disabled:bg-muted disabled:text-foreground/40"
       >
         {loading ? "Syncing" : "Fetch"}
       </button>
     </form>
+  );
+}
+
+function Segmented<T extends string>({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: [T, string][];
+  label: string;
+}) {
+  return (
+    <div role="group" aria-label={label} className={cn(CONTROL, "gap-0.5 px-1")}>
+      {options.map(([option, text]) => (
+        <button
+          key={option}
+          type="button"
+          aria-pressed={value === option}
+          onClick={() => onChange(option)}
+          className={cn(
+            "squircle relative h-7 cursor-pointer rounded-[9px] px-2.5 transition-colors duration-150 ease-out",
+            value === option ? "text-white" : "text-foreground/55 hover:text-foreground",
+          )}
+        >
+          {value === option && (
+            <motion.span
+              layoutId={`segment-${label}`}
+              className="squircle absolute inset-0 rounded-[9px] bg-accent"
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            />
+          )}
+          <span className="relative">{text}</span>
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -316,18 +363,21 @@ function Select<T extends string>({
   children: ReactNode;
 }) {
   return (
-    <label className="relative">
+    <label className={cn(CONTROL, "relative cursor-pointer pr-8", disabled && "opacity-40")}>
       <span className="sr-only">{label}</span>
       <select
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as T)}
-        className="h-9 appearance-none rounded-md border border-hairline bg-elevated pr-8 pl-3 text-sm text-white outline-none focus:border-hairline-strong disabled:text-ash"
+        className={cn(
+          "cursor-pointer appearance-none bg-transparent font-medium outline-none disabled:cursor-default",
+          FIELD_TEXT,
+        )}
       >
         {children}
       </select>
       <svg
-        className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-mute"
+        className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 opacity-45"
         width="12"
         height="12"
         viewBox="0 0 12 12"
@@ -361,7 +411,10 @@ function DifficultyInput({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 w-20 rounded-md border border-hairline bg-elevated px-3 text-sm text-white tabular-nums outline-none placeholder:text-ash focus:border-hairline-strong"
+      className={cn(
+        "w-14 bg-transparent text-center font-medium tabular-nums outline-none placeholder:text-foreground/40 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+        FIELD_TEXT,
+      )}
     />
   );
 }
@@ -380,14 +433,14 @@ function sortRows(rows: ProblemRow[], sort: Sort, seed: number): ProblemRow[] {
   return [...rows].sort(compare);
 }
 
-// "Ex" was ABC's name for the eighth task, so it sorts where "H" would.
+// "Ex" was ABC's name for the eighth task, so it sorts where "H" would
 const indexKey = (index: string) => (index === "Ex" ? "H" : index);
 
 function compareIndex(a: ProblemRow, b: ProblemRow) {
   return indexKey(a[2]).localeCompare(indexKey(b[2]), "en", { numeric: true });
 }
 
-/** Deterministic Fisher–Yates (mulberry32) so rendering stays pure for a given seed. */
+/** deterministic fisher–yates (mulberry32) so rendering stays pure for a given seed */
 function shuffled<T>(items: T[], seed: number): T[] {
   const out = [...items];
   let s = seed >>> 0;

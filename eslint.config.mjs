@@ -12,8 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Raw problem data (the original static site), not app code.
+    // reference material, not app code
     "sample/**",
+    "rare-ui/**",
   ]),
 ]);
 

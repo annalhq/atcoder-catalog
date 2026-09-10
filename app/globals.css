@@ -1,130 +1,147 @@
 @import "tailwindcss";
 
-/* Tokens from DESIGN.md — a single dark mode built on a surface ladder. */
-@theme {
-  --color-canvas: #07080a;
-  --color-surface: #0d0d0d;
-  --color-elevated: #101111;
-  --color-card: #121212;
-  --color-hairline: #242728;
-  --color-hairline-strong: rgba(255, 255, 255, 0.16);
+@custom-variant dark (&:is(.dark *));
 
-  --color-ink: #f4f4f6;
-  --color-body: #cdcdcd;
-  --color-mute: #9c9c9d;
-  --color-ash: #6a6b6c;
-  --color-stone: #434345;
-  --color-on-dark-mute: rgba(255, 255, 255, 0.72);
-  --color-primary-pressed: #e8e8e8;
+/* Tokens ported from rare-ui: one orange accent, neutral surfaces, light + dark. */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.3211 0 0);
+  --card: #ebebeb;
+  --card-foreground: oklch(0.3211 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.3211 0 0);
+  --muted: oklch(0.9846 0.0017 247.8389);
+  --muted-foreground: oklch(0.551 0.0234 264.3637);
+  --border: oklch(0.9276 0.0058 264.5313);
+  --accent: #fc4c01;
+  --accent-hover: #e64500;
 
-  --color-accent-red: #ff6161;
-  --color-accent-green: #59d499;
-  --color-accent-green-soft: rgba(89, 212, 153, 0.15);
+  /* AtCoder rating colours, light variants */
+  --rating-0: rgb(128 128 128);
+  --rating-1: rgb(128 64 0);
+  --rating-2: rgb(0 128 0);
+  --rating-3: rgb(0 192 192);
+  --rating-4: rgb(0 0 255);
+  --rating-5: rgb(192 192 0);
+  --rating-6: rgb(255 128 0);
+  --rating-7: rgb(255 0 0);
+  --rating-8: rgb(150 92 44);
+  --rating-9: rgb(128 128 128);
+  --rating-10: rgb(255 215 0);
+}
 
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 16px;
+.dark {
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.9219 0 0);
+  --card: oklch(0.1822 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: #262626;
+  --popover-foreground: oklch(0.9219 0 0);
+  --muted: #171717;
+  --muted-foreground: oklch(0.7155 0 0);
+  --border: oklch(0.3715 0 0);
+
+  --rating-0: rgb(192 192 192);
+  --rating-1: rgb(176 140 86);
+  --rating-2: rgb(63 175 63);
+  --rating-3: rgb(66 224 224);
+  --rating-4: rgb(136 136 255);
+  --rating-5: rgb(255 255 86);
+  --rating-6: rgb(255 184 54);
+  --rating-7: rgb(255 103 103);
+  --rating-8: rgb(150 92 44);
+  --rating-9: rgb(128 128 128);
+  --rating-10: rgb(255 215 0);
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-}
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
 
-@utility shell {
-  width: 100%;
-  max-width: 1240px;
-  margin-inline: auto;
-  padding-inline: 24px;
+  --font-sans: var(--font-inter), Inter, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-runde: var(--font-open-runde), sans-serif;
 }
 
 @layer base {
+  * {
+    border-color: var(--border);
+  }
   html {
-    color-scheme: dark;
+    scrollbar-width: thin;
+    scrollbar-color: gray transparent;
   }
-
-  /* AtCoder rating colours (dark-background variants). The one exception to
-     the no-accent chrome rule: difficulty is the core data on this site. */
-  :root {
-    --color-rating-0: rgb(192 192 192);
-    --color-rating-1: rgb(176 140 86);
-    --color-rating-2: rgb(63 175 63);
-    --color-rating-3: rgb(66 224 224);
-    --color-rating-4: rgb(136 136 255);
-    --color-rating-5: rgb(255 255 86);
-    --color-rating-6: rgb(255 184 54);
-    --color-rating-7: rgb(255 103 103);
-    --color-rating-8: rgb(150 92 44);
-    --color-rating-9: rgb(128 128 128);
-    --color-rating-10: rgb(255 215 0);
-  }
-
   body {
-    background: var(--color-canvas);
-    color: var(--color-body);
-    font-feature-settings: "calt", "kern", "liga", "ss03";
-  }
-
-  ::selection {
-    background: rgba(255, 255, 255, 0.2);
+    @apply bg-background text-foreground font-sans;
   }
 }
 
+::selection {
+  background-color: rgb(252 76 1 / 10%);
+  color: #fc4c01;
+}
+
+.selection-contrast::selection,
+.selection-contrast *::selection {
+  color: #000;
+}
+
+.dark .selection-contrast::selection,
+.dark .selection-contrast *::selection {
+  color: #fff;
+}
+
+@utility border-apple {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    inset 0 1px 0 0 rgb(80 80 80 / 0.3),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.3);
+}
+
+/* the big rounded surfaces: hero, topic cards, problem list */
+@utility surface-card {
+  @apply border border-black/[0.04] bg-[#F5F5F7] dark:border-transparent dark:border-apple dark:bg-[#121212];
+  corner-shape: squircle;
+}
+
+@utility squircle {
+  corner-shape: squircle;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @layer components {
-  /* display-xl: the hero tier swaps in ss02/ss08 and drops standard ligatures. */
-  .font-display {
-    font-feature-settings: "calt", "kern", "liga" 0, "ss02", "ss03", "ss08";
-  }
-
-  /* Hero launch-banner: three diagonal red stripes, used once on the home page. */
-  .hero-stripes {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 420px;
-    pointer-events: none;
-    opacity: 0.6;
-    mask-image: linear-gradient(to bottom, #000 10%, transparent 90%);
-    background: linear-gradient(
-      115deg,
-      transparent 0 52%,
-      #ff5757 52%, #a1131a 57%, transparent 57% 60%,
-      #ff5757 60%, #a1131a 65%, transparent 65% 68%,
-      #ff5757 68%, #a1131a 73%, transparent 73%
-    );
-  }
-
-  .keycap {
-    display: inline-flex;
-    height: 20px;
-    min-width: 20px;
-    align-items: center;
-    justify-content: center;
-    padding: 1px 6px;
-    border-radius: var(--radius-xs);
-    background: linear-gradient(#121212, #0d0d0d);
-    color: var(--color-body);
-    font-size: 13px;
-    letter-spacing: 0.1px;
-    line-height: 1;
-  }
-
-  /* Problem list rows (command-palette-row). Plain CSS rather than utilities
-     because a category can hold thousands of them; content-visibility skips
-     layout and paint for rows that are off-screen. */
+  /* problem rows are plain css: a category can hold thousands, and
+     content-visibility skips layout for the ones off screen */
   .problem-row {
     display: grid;
     grid-template-columns: 2.5rem 7.5rem minmax(0, 1fr) 4rem 3.5rem;
     align-items: center;
     gap: 12px;
-    height: 40px;
-    padding: 0 10px;
-    border-radius: var(--radius-sm);
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    corner-shape: squircle;
     font-size: 14px;
     font-variant-numeric: tabular-nums;
     content-visibility: auto;
-    contain-intrinsic-size: auto 40px;
+    contain-intrinsic-size: auto 44px;
+    transition: background-color 150ms ease-out;
   }
 
   a.problem-row:hover,
@@ -133,25 +150,24 @@
     outline: none;
   }
 
-  .problem-row[data-band="0"] { --c: var(--color-rating-0); }
-  .problem-row[data-band="1"] { --c: var(--color-rating-1); }
-  .problem-row[data-band="2"] { --c: var(--color-rating-2); }
-  .problem-row[data-band="3"] { --c: var(--color-rating-3); }
-  .problem-row[data-band="4"] { --c: var(--color-rating-4); }
-  .problem-row[data-band="5"] { --c: var(--color-rating-5); }
-  .problem-row[data-band="6"] { --c: var(--color-rating-6); }
-  .problem-row[data-band="7"] { --c: var(--color-rating-7); }
-  .problem-row[data-band="8"] { --c: var(--color-rating-8); }
-  .problem-row[data-band="9"] { --c: var(--color-rating-9); }
-  .problem-row[data-band="10"] { --c: var(--color-rating-10); }
+  .problem-row[data-band="0"] { --c: var(--rating-0); }
+  .problem-row[data-band="1"] { --c: var(--rating-1); }
+  .problem-row[data-band="2"] { --c: var(--rating-2); }
+  .problem-row[data-band="3"] { --c: var(--rating-3); }
+  .problem-row[data-band="4"] { --c: var(--rating-4); }
+  .problem-row[data-band="5"] { --c: var(--rating-5); }
+  .problem-row[data-band="6"] { --c: var(--rating-6); }
+  .problem-row[data-band="7"] { --c: var(--rating-7); }
+  .problem-row[data-band="8"] { --c: var(--rating-8); }
+  .problem-row[data-band="9"] { --c: var(--rating-9); }
+  .problem-row[data-band="10"] { --c: var(--rating-10); }
 
-  /* The circle fills with how far the difficulty is into its colour band;
-     bronze, silver and gold get a metallic sheen instead. */
+  /* fills with how far the difficulty sits inside its 400-point band */
   .diff-dot {
     flex: none;
     width: 12px;
     height: 12px;
-    border: 1px solid var(--c);
+    border: 1.5px solid var(--c);
     border-radius: 9999px;
     background: linear-gradient(to top, var(--c) var(--fill), transparent var(--fill)) border-box;
   }
@@ -162,47 +178,35 @@
     background: linear-gradient(to right, var(--c), #fff, var(--c));
   }
 
-  .problem-title {
+  .problem-title,
+  .diff-value {
     color: var(--c);
   }
 
   .diff-value {
     text-align: right;
-    color: var(--c);
   }
 
-  /* Hiding difficulty removes every hint of it, colour included. */
   [data-hide-difficulty] .diff-dot,
   [data-hide-difficulty] .diff-value {
     visibility: hidden;
   }
 
   [data-hide-difficulty] .problem-title {
-    color: var(--color-ink);
+    color: var(--color-foreground);
   }
 
-  /* badge-pro for verdicts; accepted problems use the success accent. */
-  .verdict {
-    display: inline-block;
-    min-width: 36px;
-    padding: 2px 6px;
-    border-radius: var(--radius-xs);
-    background: var(--color-elevated);
-    color: var(--color-on-dark-mute);
-    font-size: 12px;
-    letter-spacing: 0.4px;
-    line-height: 1.5;
-    text-align: center;
-  }
-
-  [data-verdict="ac"] .verdict {
-    background: var(--color-accent-green-soft);
-    color: var(--color-accent-green);
-  }
-
-  @media (max-width: 640px) {
+  /* just under tailwind's sm, so the two never apply at the same width */
+  @media (max-width: 639.98px) {
     .problem-row {
-      grid-template-columns: minmax(0, 1fr) 3rem 3.5rem;
+      grid-template-columns: minmax(0, 1fr) 2.75rem 3.25rem;
+      gap: 8px;
+      height: 56px;
+      padding: 0 10px;
+      contain-intrinsic-size: auto 56px;
+    }
+    .problem-row[aria-hidden] {
+      height: 32px;
     }
     .problem-row > :nth-child(-n + 2) {
       display: none;
