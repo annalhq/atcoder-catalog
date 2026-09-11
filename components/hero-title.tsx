@@ -52,7 +52,20 @@ export function HeroTitle({ topics }: { topics: HeroTopic[] }) {
           <span aria-hidden className="block">
             Get good at
           </span>
-          <span aria-hidden className="relative block h-[1.15em] overflow-hidden text-accent">
+          {/* invisible copies of every label size the line to the widest one, so no topic gets clipped */}
+          <span
+            aria-hidden
+            className="-mb-[0.15em] grid justify-items-center overflow-hidden px-[0.1em] pb-[0.15em] text-accent"
+          >
+            {topics.map((t) => (
+              <span key={t.slug} className="invisible whitespace-nowrap [grid-area:1/1]">
+                {Array.from(t.label, (char, i) => (
+                  <span key={i} className="inline-block whitespace-pre">
+                    {char}
+                  </span>
+                ))}
+              </span>
+            ))}
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={topic.slug}
@@ -60,7 +73,7 @@ export function HeroTitle({ topics }: { topics: HeroTopic[] }) {
                 initial="hidden"
                 animate="show"
                 exit="exit"
-                className="absolute inset-x-0 top-0 whitespace-nowrap"
+                className="whitespace-nowrap [grid-area:1/1]"
               >
                 {Array.from(topic.label, (char, i) => (
                   <motion.span key={i} variants={letter} className="inline-block whitespace-pre">
@@ -69,9 +82,6 @@ export function HeroTitle({ topics }: { topics: HeroTopic[] }) {
                 ))}
               </motion.span>
             </AnimatePresence>
-          </span>
-          <span aria-hidden className="block">
-            one topic at a time.
           </span>
         </h1>
       </Rise>
@@ -89,9 +99,7 @@ export function HeroTitle({ topics }: { topics: HeroTopic[] }) {
           <span className="opacity-40">·</span>
           <span>
             median{" "}
-            <span className="tabular-nums transition-colors duration-700" style={{ color }}>
-              {topic.median}
-            </span>
+            <span className="text-black tabular-nums dark:text-white">{topic.median}</span>
           </span>
         </CategoryLink>
       </Rise>

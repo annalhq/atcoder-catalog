@@ -5,6 +5,7 @@ import { Footer } from "@/components/footer";
 import { MotionProvider } from "@/components/motion-provider";
 import { Navbar } from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -22,6 +23,7 @@ const openRunde = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "AtCat", template: "%s | AtCat" },
   description:
     "Practice AtCoder problems by topic and track your progress, without seeing every tag a problem carries.",

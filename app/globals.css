@@ -54,6 +54,21 @@
   --rating-10: rgb(255 215 0);
 }
 
+/* page frame: the hero card sits --frame-gap from the viewport with --frame-radius corners.
+   the navbar's 48px pills are inset so their 24px corners share the card corner's centre */
+:root {
+  --frame-gap: 6px;
+  --frame-radius: 36px;
+  --nav-inset: calc(var(--frame-gap) + var(--frame-radius) - 24px);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --frame-gap: 10px;
+    --frame-radius: 45px;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -113,8 +128,23 @@
   corner-shape: squircle;
 }
 
+/* the panel nested inside a surface card: problem table, expanded topic */
+@utility inset-panel {
+  @apply border border-black/[0.06] bg-white dark:border-white/[0.06] dark:bg-[#1a1a1a];
+  corner-shape: squircle;
+}
+
 @utility squircle {
   corner-shape: squircle;
+}
+
+@utility hero-frame {
+  padding: var(--frame-gap);
+}
+
+@utility hero-card {
+  border-radius: var(--frame-radius);
+  min-height: min(100svh - 2 * var(--frame-gap), 60rem);
 }
 
 .no-scrollbar {
@@ -126,18 +156,22 @@
 }
 
 @layer components {
-  /* problem rows are plain css: a category can hold thousands, and
-     content-visibility skips layout for the ones off screen */
+  /* problem table: # · code · problem · difficulty.
+     every row uses the same fixed tracks so columns line up without a <table>;
+     the code track fits the longest id (10 chars), titles wrap instead of clipping.
+     content-visibility skips layout for off-screen rows in big categories */
   .problem-row {
     display: grid;
-    grid-template-columns: 2.5rem 7.5rem minmax(0, 1fr) 4rem 3.5rem;
-    align-items: center;
-    gap: 12px;
-    height: 44px;
-    padding: 0 14px;
-    border-radius: 14px;
+    grid-template-columns: 2.5rem 6rem minmax(0, 1fr) 3.5rem;
+    align-items: baseline;
+    column-gap: 16px;
+    min-height: 44px;
+    padding: 12px 14px;
+    /* list radius 24px minus its 6px padding */
+    border-radius: 18px;
     corner-shape: squircle;
     font-size: 14px;
+    line-height: 20px;
     font-variant-numeric: tabular-nums;
     content-visibility: auto;
     contain-intrinsic-size: auto 44px;
@@ -146,8 +180,44 @@
 
   a.problem-row:hover,
   a.problem-row:focus-visible {
-    background: var(--color-card);
+    background: color-mix(in oklab, var(--foreground) 6%, transparent);
     outline: none;
+  }
+
+  .cell-code {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  /* the dot hangs in the left padding, so wrapped title lines stay indented */
+  .cell-title {
+    position: relative;
+    padding-left: 22px;
+    overflow-wrap: anywhere;
+  }
+
+  .cell-title > .diff-dot {
+    position: absolute;
+    left: 0;
+    top: 4px;
+  }
+
+  .cell-diff {
+    text-align: right;
+  }
+
+  /* hiding difficulty removes the dot and collapses the column */
+  [data-hide-difficulty] .problem-row {
+    grid-template-columns: 2.5rem 6rem minmax(0, 1fr);
+  }
+
+  [data-hide-difficulty] .cell-diff,
+  [data-hide-difficulty] .diff-dot {
+    display: none;
+  }
+
+  [data-hide-difficulty] .cell-title {
+    padding-left: 0;
   }
 
   .problem-row[data-band="0"] { --c: var(--rating-0); }
@@ -174,42 +244,40 @@
 
   .problem-row[data-band="8"] .diff-dot,
   .problem-row[data-band="9"] .diff-dot,
-  .problem-row[data-band="10"] .diff-dot {
+  .problem-row[data-band="10"] .diff-dot,
+  .diff-dot[data-metal] {
     background: linear-gradient(to right, var(--c), #fff, var(--c));
-  }
-
-  .problem-title,
-  .diff-value {
-    color: var(--c);
-  }
-
-  .diff-value {
-    text-align: right;
-  }
-
-  [data-hide-difficulty] .diff-dot,
-  [data-hide-difficulty] .diff-value {
-    visibility: hidden;
-  }
-
-  [data-hide-difficulty] .problem-title {
-    color: var(--color-foreground);
   }
 
   /* just under tailwind's sm, so the two never apply at the same width */
   @media (max-width: 639.98px) {
     .problem-row {
-      grid-template-columns: minmax(0, 1fr) 2.75rem 3.25rem;
-      gap: 8px;
-      height: 56px;
-      padding: 0 10px;
-      contain-intrinsic-size: auto 56px;
+      grid-template-columns: 2rem minmax(0, 1fr) 2.5rem;
+      column-gap: 10px;
+      min-height: 40px;
+      padding: 10px;
+      border-radius: 16px;
+      font-size: 13px;
+      line-height: 18px;
+      contain-intrinsic-size: auto 40px;
     }
-    .problem-row[aria-hidden] {
-      height: 32px;
+
+    [data-hide-difficulty] .problem-row {
+      grid-template-columns: 2rem minmax(0, 1fr);
     }
-    .problem-row > :nth-child(-n + 2) {
+
+    /* phones drop the code column so the title gets the room */
+    .cell-code {
       display: none;
+    }
+
+    .cell-title {
+      padding-left: 17px;
+    }
+
+    .cell-title > .diff-dot {
+      width: 10px;
+      height: 10px;
     }
   }
 }

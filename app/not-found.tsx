@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <section className="relative w-full p-1.5 md:p-2.5">
-      <div className="surface-card relative flex min-h-[min(100svh_-_0.75rem,60rem)] w-full items-center justify-center overflow-hidden rounded-[45px] md:min-h-[min(100svh_-_1.25rem,60rem)]">
+    <section className="hero-frame relative w-full">
+      <div className="surface-card hero-card relative flex w-full items-center justify-center overflow-hidden">
         <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(120%_75%_at_50%_-5%,rgba(255,255,255,0.07),transparent_60%)] dark:block" />
 
         <div className="relative flex flex-col items-center justify-center gap-4 px-6 pt-28 pb-24 text-center sm:gap-5">

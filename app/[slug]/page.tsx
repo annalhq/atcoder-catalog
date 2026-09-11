@@ -36,8 +36,8 @@ export default async function CategoryPage({ params }: PageProps<"/[slug]">) {
   });
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-3 pt-28 pb-16 sm:px-6 sm:pt-32 md:pt-40">
-      <header className="flex flex-col items-center gap-3 px-2 text-center sm:px-0">
+    <main className="mx-auto w-full max-w-6xl flex-1 px-[var(--frame-gap)] pt-28 pb-16 sm:pt-32 md:pt-40">
+      <header className="flex flex-col items-center gap-3 px-4 text-center">
         <Rise index={0}>
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center justify-center gap-2 text-sm font-medium text-muted-foreground">
             <Link href="/#topics" className="transition-colors duration-150 ease-out hover:text-foreground">

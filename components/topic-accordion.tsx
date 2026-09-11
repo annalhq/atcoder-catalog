@@ -54,7 +54,7 @@ export function TopicAccordion({ tree }: { tree: CountedNode[] }) {
 
   return (
     <>
-      <div className="mx-auto flex w-full max-w-xl items-center gap-2">
+      <div className="mx-auto flex w-full max-w-xl items-center gap-2 px-1 sm:px-0">
         <label className="relative block flex-1">
           <span className="sr-only">Search topics</span>
           <svg
@@ -97,9 +97,11 @@ export function TopicAccordion({ tree }: { tree: CountedNode[] }) {
       </div>
 
       {columns.length > 0 ? (
-        <div className="mt-10 grid items-start gap-4 lg:grid-cols-2">
+        // grid-cols-1 is minmax(0, 1fr): an implicit auto track would grow to the longest
+        // nowrap subtopic name and push the page wider than the phone
+        <div className="mt-8 grid grid-cols-1 items-start gap-2 sm:mt-10 sm:gap-4 lg:grid-cols-2">
           {columns.map((column) => (
-            <div key={column[0].slug} className="flex flex-col gap-4">
+            <div key={column[0].slug} className="flex min-w-0 flex-col gap-2 sm:gap-4">
               {column.map((node) => (
                 <TopicCard
                   key={node.slug}
@@ -203,7 +205,7 @@ function TopicCard({ node, open, onToggle }: { node: CountedNode; open: boolean;
               variants={list}
               initial="closed"
               animate="open"
-              className="squircle mx-2 mb-2 rounded-3xl border border-black/[0.06] bg-white p-2 dark:border-neutral-500/15 dark:bg-neutral-950"
+              className="inset-panel mx-2 mb-2 rounded-3xl p-2"
             >
               <Item>
                 <TopicRow slug={node.slug} title="All problems" count={node.count} strong />
@@ -239,7 +241,7 @@ function TopicRow({ slug, title, count, strong }: { slug: string; title: string;
     <CategoryLink
       href={`/${slug}`}
       className={cn(
-        "squircle flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition-colors duration-150 ease-out hover:bg-card",
+        "squircle flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition-colors duration-150 ease-out hover:bg-foreground/[0.06]",
         strong ? "font-semibold text-foreground" : "font-medium text-foreground/60 hover:text-foreground",
       )}
     >

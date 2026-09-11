@@ -9,6 +9,13 @@ const LINKS: FooterLink[] = [
   { label: "Home", href: "/" },
   { label: "Topics", href: "/#topics" },
   { label: "Practice", href: "/practice" },
+  { label: "About", href: "/about" },
+];
+
+// route handlers, so plain anchors rather than client-side links
+const UTILITY_LINKS = [
+  { label: "sitemap", href: "/sitemap.xml" },
+  { label: "robots.txt", href: "/robots.txt" },
 ];
 
 const HOVER = "transition-colors duration-150 ease-out hover:text-black dark:hover:text-white";
@@ -68,12 +75,19 @@ export function Footer() {
         <div className={`selection-contrast flex flex-wrap items-center justify-between gap-3 pb-8 text-xs ${MUTED}`}>
           <span className="flex flex-wrap items-center gap-2.5">
             <span>AtCat &copy; {new Date().getFullYear()}</span>
-            <span aria-hidden="true" className="text-black/25 dark:text-white/25">
-              &middot;
-            </span>
+            {UTILITY_LINKS.map((link) => (
+              <Fragment key={link.href}>
+                <span aria-hidden="true" className="text-black/25 dark:text-white/25">
+                  &middot;
+                </span>
+                <a href={link.href} className={HOVER}>
+                  {link.label}
+                </a>
+              </Fragment>
+            ))}
           </span>
           <span className="flex flex-wrap items-center gap-2.5">
-            ann
+            ann :)
           </span>
         </div>
       </div>

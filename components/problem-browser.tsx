@@ -114,7 +114,8 @@ export function ProblemBrowser({ rows, ladder }: { rows: ProblemRow[]; ladder: b
   };
 
   return (
-    <section className="surface-card rounded-[28px] p-1.5 sm:rounded-[32px] sm:p-2">
+    // centred with a max width, so short titles do not leave a wall of space on one side
+    <section className="surface-card mx-auto w-full max-w-4xl rounded-[28px] p-1.5 sm:rounded-[32px] sm:p-2">
       <div className="flex flex-col gap-3 px-2 pt-2 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <UserForm user={user} loading={loading} />
@@ -192,15 +193,17 @@ export function ProblemBrowser({ rows, ladder }: { rows: ProblemRow[]; ladder: b
       </div>
 
       <div
-        className="squircle rounded-3xl border border-black/[0.06] bg-white p-1.5 dark:border-neutral-500/15 dark:bg-neutral-950"
+        className="inset-panel rounded-[22px] p-1.5 sm:rounded-3xl"
         data-hide-difficulty={showDifficulty ? undefined : ""}
       >
-        <div className="problem-row text-[10px] font-medium tracking-wider text-foreground/45 uppercase" aria-hidden>
+        <div
+          className="problem-row min-h-0 py-2.5 text-[10px] font-medium tracking-wider text-foreground/45 uppercase"
+          aria-hidden
+        >
           <span>#</span>
-          <span>Task</span>
-          <span>Title</span>
-          <span className="diff-value">Diff</span>
-          <span />
+          <span className="cell-code text-[10px]">Code</span>
+          <span className="cell-title">Problem</span>
+          <span className="cell-diff">Diff</span>
         </div>
         {/* keyed by the filters so each new result set fades in */}
         <motion.div
@@ -229,39 +232,27 @@ const Row = memo(function Row({ row, n, verdict }: { row: ProblemRow; n: number;
   const { band, fill } = difficultyBand(difficulty);
   const solved = verdict === "AC";
   return (
-    <a
-      href={problemUrl(row)}
-      target="_blank"
-      rel="noreferrer"
-      className="problem-row"
-      data-band={band}
-      data-verdict={solved ? "ac" : undefined}
-    >
+    <a href={problemUrl(row)} target="_blank" rel="noreferrer" className="problem-row" data-band={band}>
       <span className="text-foreground/40">{n}</span>
-      <span className="truncate font-mono text-xs text-foreground/55 uppercase">{id}</span>
-      <span className="flex min-w-0 items-center gap-2.5">
+      <span className="cell-code font-medium text-foreground/50 uppercase">{id}</span>
+      <span className="cell-title font-medium text-foreground">
         <span className="diff-dot" style={{ "--fill": `${fill}%` } as CSSProperties} />
-        <span className="flex min-w-0 flex-col">
-          <span className="problem-title truncate font-medium">
-            <Title text={title} />
-          </span>
-          {/* the task column is hidden on phones, so the id moves under the title */}
-          <span className="truncate font-mono text-[11px] text-foreground/45 uppercase sm:hidden">{id}</span>
-        </span>
-      </span>
-      <span className="diff-value">{difficulty}</span>
-      <span className="text-right">
+        <Title text={title} />
+        {/* inline after the title, so it wraps with it rather than needing a column */}
         {verdict && (
           <span
             className={cn(
-              "inline-block min-w-9 rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold",
-              solved ? "bg-accent/10 text-accent" : "bg-muted text-foreground/60",
+              "ml-2 inline-flex h-[18px] items-center rounded-md px-1.5 text-[10.5px] leading-none font-semibold tracking-wide whitespace-nowrap",
+              solved
+                ? "bg-emerald-500/12 text-emerald-600 dark:text-emerald-400"
+                : "bg-foreground/[0.08] text-foreground/60",
             )}
           >
             {verdict}
           </span>
         )}
       </span>
+      <span className="cell-diff text-foreground/55">{difficulty}</span>
     </a>
   );
 });

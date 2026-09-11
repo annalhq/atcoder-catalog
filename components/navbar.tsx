@@ -53,7 +53,7 @@ export function Navbar() {
   const isActive = (href: string) => href.split("#")[0] === pathname && !href.includes("#");
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4 sm:top-5 sm:px-6 md:top-7.5">
+    <div className="pointer-events-none fixed inset-x-0 top-[var(--nav-inset)] z-50 flex justify-center px-[var(--nav-inset)]">
       <motion.nav
         layout={animateLayout}
         transition={spring}
